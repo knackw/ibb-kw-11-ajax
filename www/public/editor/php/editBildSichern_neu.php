@@ -1,9 +1,7 @@
 <?php
+
 include_once( "../../connection/connect.php" );
-?>
 
-
-<?php
 $message = "";
 
 

@@ -27,41 +27,39 @@ services:
       - ./www:/www:rw,cached
 
   # MariaDB - Service
-    database:
+  database:
     image: mariadb:10
     container_name: mariadb
     restart: always
-      environment:
-      MYSQL_DATABASE: ibb_bilddatenbank
+    environment:
+      MYSQL_DATABASE: app_db
       MYSQL_USER: user
       MYSQL_PASSWORD: user
       MYSQL_ALLOW_EMPTY_PASSWORD: 'no'
       MYSQL_ROOT_PASSWORD: root
     ports: ['6033:3306']
     expose: ['3306']
-      volumes:
+    volumes:
       - dbdata:/var/lib/mysql
       - ./backups:/backups
-      networks:
+    networks:
       - ibb-kw-11-ajax
 
   # PHPMyAdmin
-    phpmyadmin:
+  phpmyadmin:
     image: phpmyadmin/phpmyadmin:4.7
     container_name: phpmyadmin
     restart: always
     depends_on: ['database']
     ports: ['8081:80']
     links: ['database:database']
-      environment:
+    environment:
       - PMA_HOST=database
       - PMA_USER=user
       - PMA_PASSWORD=user
       - PMA_ARBITRARY=1
-      networks:
+    networks:
       - ibb-kw-11-ajax
 
-  volumes:
-    dbdata: {}
-
-
+volumes:
+  dbdata: {}

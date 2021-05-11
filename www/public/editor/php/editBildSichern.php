@@ -6,20 +6,20 @@ include_once( "../../connection/connect.php" );
 <?php
 $message = "";
 
-$ueberschrift = $_POST[ 'ueberschrift' ];
+$ueberschrift = isset($_POST[ 'ueberschrift' ])?:"";
 $message .= "überschrift: " . $ueberschrift . "\n";
-$fliesstext = $_POST[ 'fliesstext' ];
+$fliesstext = isset($_POST[ 'fliesstext' ])?:"";
 $message .= "fliesstext: " . $fliesstext . "\n";
-$autor = $_POST[ 'autor' ];
+$autor = isset($_POST[ 'autor' ])?:"";
 $message .= "autor: " . $autor . "\n";
-$kategorie = $_POST[ 'kategorie' ];
+$kategorie = isset($_POST[ 'kategorie' ])?:"";
 $message .= "kategorie: " . $kategorie . "\n";
-$datum = $_POST[ 'datum' ];
+$datum = isset($_POST[ 'datum' ])?:"";
 $message .= "datum: " . $datum . "\n";
-$ID = $_POST[ 'ID' ];
-$nummer = $_POST[ 'nummer' ];
+$ID = isset($_POST[ 'ID' ])?:"";
+$nummer = isset($_POST[ 'nummer' ])?:"";
 
-$quelle = $_POST[ 'quelle' ];
+$quelle = isset($_POST[ 'quelle' ])?:"";
 $message .= "quelle: " . $quelle . "\n";
 
 

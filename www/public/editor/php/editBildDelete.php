@@ -8,8 +8,8 @@ include_once("../../connection/connect.php");
 $message = "";
 
 
-$ID = $_POST['ID'];
-$quelle = $_POST['quelle'];
+$ID = isset($_POST['ID'])?:"";
+$quelle = isset($_POST['quelle'])?:"";
 $message .= "id: " . $ID . "\nquelle: " . $quelle . "\n";
 //////////////////////
 //eintrag db löschen

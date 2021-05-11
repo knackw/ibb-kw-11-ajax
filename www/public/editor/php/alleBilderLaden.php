@@ -11,7 +11,7 @@ $counter = 0;
 $sql = "SELECT * FROM bilder";
 $result = $conn->query($sql);
 
-if ($result->num_rows > 0) {
+if (!empty($result) && $result->num_rows > 0) {
   // output data of each row
   while($row = $result->fetch_assoc()) {
     $message .= "bildId: " . $row["bildID"] . "\n";
