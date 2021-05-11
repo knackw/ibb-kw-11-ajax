@@ -1,9 +1,13 @@
  <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "ibb_bilddatenbankkw11";
+$servername = "database";
+$username = "user";
+$password = "user";
+$dbname = "ibb_bilddatenbank";
 
+define("SERVER", $servername);
+define("USERNAME", $username);
+define("PASSWORD", $password);
+define("DB", $dbname);
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);

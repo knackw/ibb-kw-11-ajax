@@ -1,7 +1,7 @@
 version: '3'
 
 networks:
-  ibb-kw-09-wp:
+  ibb-kw-11-ajax:
 
 services:
   # NGINX PHP 8.0
@@ -22,7 +22,7 @@ services:
       - XDEBUG_MAX_NESTING_LEVEL=1000
     ports: ['8080:80']
     networks:
-      - ibb-kw-09-wp
+      - ibb-kw-11-ajax
     volumes:
       - ./www:/www:rw,cached
 
@@ -32,7 +32,7 @@ services:
     container_name: mariadb
     restart: always
       environment:
-      MYSQL_DATABASE: app_db
+      MYSQL_DATABASE: ibb_bilddatenbank
       MYSQL_USER: user
       MYSQL_PASSWORD: user
       MYSQL_ALLOW_EMPTY_PASSWORD: 'no'
@@ -43,7 +43,7 @@ services:
       - dbdata:/var/lib/mysql
       - ./backups:/backups
       networks:
-      - php8dev
+      - ibb-kw-11-ajax
 
   # PHPMyAdmin
     phpmyadmin:
@@ -59,7 +59,7 @@ services:
       - PMA_PASSWORD=user
       - PMA_ARBITRARY=1
       networks:
-      - php8dev
+      - ibb-kw-11-ajax
 
   volumes:
     dbdata: {}
