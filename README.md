@@ -1,4 +1,4 @@
-#Weiterbildung Bilddatenbanken mit Ajax und MySQL®
+#IBB Weiterbildung Bilddatenbanken mit Ajax und MySQL®
 
 Link: https://www.ibb.com/weiterbildung/bilddatenbanken-mit-ajax-und-mysql
 
