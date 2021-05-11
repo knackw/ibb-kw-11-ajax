@@ -53,7 +53,7 @@ Siehe hierzu: https://github.com/knackw/docker_nginx_php8_mariadb10_phpmyadmin41
 
 ## 2. Installation der HTML Entwicklungsumgebung
 
-**1) Webserver erzeugen**
+**a) Webserver erzeugen**
 
 Quellangaben:
 
@@ -75,11 +75,11 @@ Zum Beenden des Services gibst du
 
 ein.
 
-**2) Tabelle anlegen**
+**b) Tabelle anlegen**
 
 Um die Tabelle zu erzeugen muss das Script `tables_creator.php` im Verzeichnis `./www/public/connection/` ausgeführt werden.
 
-## 5. Schlussbemerkung
+## 3. Schlussbemerkung
 
 Solltest Du Fehler entdecken, Vorschläge oder Anregungen haben scheu Dich nicht mir ein Ticket zu schreiben. 
 
