@@ -1,0 +1,344 @@
+<!doctype html>
+<html>
+	<head>
+	<meta charset="utf-8">
+	<title>Unbenanntes Dokument</title>
+	<style>
+html {
+    font-family: Verdana;
+    font-size: 0.95em;
+    line-height: 12px;
+    font-size: 12px;
+}
+.inhalt {
+    position: absolute;
+    top: 10%;
+    left: 5%;
+    width: auto;
+    max-width: 20%;
+    background-color: rgba(0,0,0,0.5);
+    color: white;
+    padding: 10px;
+    line-height: 16px;
+}
+body {
+    margin: 0;
+}
+img {
+    width: 100%;
+}
+.bildcontainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+#slideshow {
+    position: relative;
+    width: 100%;
+    left: 0;
+    top: 0;
+}
+button {
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    opacity: 0.5;
+}
+button:hover {
+    opacity: 0.9;
+}
+#btnNext {
+    right: 0;
+}
+#btnPrev {
+    left: 0;
+}
+#btnPlay {
+    display: none;
+}
+#iconContainer img {
+    opacity: 0.5;
+    cursor: pointer;
+}
+#iconContainer img:first-child {
+    opacity: 1;
+}
+#iconContainer img:hover {
+    opacity: 1;
+}
+</style>
+	<script src="js/jquery-3.6.0.min.js"></script>
+	<script>
+		
+		var bilderArray = new Array();
+		var counter = 0;
+		var nextcounter = 1;
+		var anzahl;
+		var mytimer = undefined;
+		var mykategorie = "";
+		var aktindex = 0;
+		///////////////////////////////
+		//alle bilder laden
+		///////////////////////////////
+		function alleBilderLaden() {
+			if(mytimer) {
+				clearInterval(mytimer);
+			}
+			counter = 0;
+			nextcounter = 1;
+			
+			var mykategorie = document.getElementById("kategorie").value;
+			//alert(mykategorie);
+			$.ajax({
+				url: "php/alleBilderLaden.php",
+				data: {kategorie:mykategorie},
+				dataType: "json",
+				type: "post",
+				success: function(data) {
+					alert(data.message);
+					bilderArray = data.bilderArray;
+					//bilder vorladen und einfügen
+					var imgarray = new Array();
+					var imgcounter = 0;
+					var anzahl = bilderArray.length;
+					for(var a=0; a<anzahl; a++) {
+						var myimg = new Image();
+						myimg.src = 'bilder/' + bilderArray[a].bildQuelle + '.jpg';
+						myimg.onload = function(evt) {
+						imgarray.push(myimg);
+						//alert(imgarray.length);
+						if(imgarray.length >= anzahl) {
+							//alert("fertig bilder laden");
+							baueSlideshow();
+						}
+					}
+				}
+			},
+			error: function() {
+				alert("error alle bilder laden");
+			}
+		});
+	}
+
+		
+	/////////////////////////////
+	//slideshow aufbauen
+	//////////////////////////////	
+	function btnPositionieren() {
+		//bildhoehe für buttons
+		var hoehe = $(".bildcontainer").first().height(); //$(".bildcontainer").height();
+		//console.log("browserbreite: " + $(window).width());
+		//console.log("browserhoehe: " + $(window).height());
+		//console.log("divbreite: " + $(".bildcontainer").first().width());
+		//console.log("divhoehe: " + $(".bildcontainer").first().height());
+		//console.log("bildhoehe: " + hoehe);
+		$("#slideshowContainer").css("height", hoehe + "px");
+		//buttons positionieren
+		$("#btnNext").css("top", Math.round(hoehe/2) + "px");
+		$("#btnPrev").css("top", Math.round(hoehe/2) + "px");
+		$("#btnPlay").css("top", Math.round(hoehe/2) + "px");
+		$("#btnPlay").css("left", $(window).width()/2 + "px");
+		//console.log("buttony: " + Math.round((hoehe/2)));
+		
+		//inhalt links rechts mittig
+		var offsetX = ($(window).width() - $(".bildcontainer").first().width()) / 2;
+		$(".bildcontainer").css("left", offsetX + "px");
+		
+	}
+
+
+	/////////////////////////////
+	//start slideshow
+	//////////////////////////////	
+	function startShow() {
+		//alert("reaDY");
+		anzahl = $("#slideshowContainer img").length;
+		aktindex = 0;
+		//console.log("anzahl: " + anzahl);
+		//alle bis 1. aus
+		for(var a=1; a<anzahl; a++) {
+			$("#slideshowContainer  div:eq(" + a + ")").hide();
+		}
+		//inerval definition
+		mytimer = setInterval(bildwechsel, 3000);
+	}
+
+	/////////////////////////////
+	//bildwechsel
+	//////////////////////////////			
+	function bildwechsel() {
+		//alle icons 50%
+		$("#iconContainer img").css("opacity", "0.5");
+		//aktuelles an
+		$("#iconContainer img:eq(" + nextcounter + ")").css("opacity", "1");
+		
+		var current = $("#slideshowContainer  div:eq(" + counter + ")");
+		var next = $("#slideshowContainer  div:eq(" + nextcounter + ")");
+		//console.log("bildwechsel von " + counter + " nach " + nextcounter);
+		current.fadeOut(1000);
+		next.fadeIn(1000, function() {
+			aktindex++;
+
+		});
+	
+		counter++;
+		nextcounter++;
+		if(counter >= anzahl) counter = 0;
+		if(nextcounter >= anzahl) nextcounter = 0;
+	
+	}
+
+	/////////////////////////////
+	//blaettern next
+	//////////////////////////////	
+	function nextPic() {
+		if(mytimer) {
+			clearInterval(mytimer);
+		}
+		$("#btnPlay").css("display", "block");
+		bildwechsel();
+	}
+	
+	/////////////////////////////
+	//blaettern prev
+	//////////////////////////////		
+	function prevPic() {
+		//alert("prevpic");
+		if(mytimer) {
+			clearInterval(mytimer);
+		}
+		$("#btnPlay").css("display", "block");
+		//alle icons 50%
+		$("#iconContainer img").css("opacity", "0.5");
+		
+		counter--;
+		//aktuelles an
+		$("#iconContainer img:eq(" + counter + ")").css("opacity", "1");
+
+		nextcounter--;
+		if(counter < 0) counter = anzahl-1;
+		if(nextcounter < 0) nextcounter = anzahl-1;
+		var current = $("#slideshowContainer  div:eq(" + counter + ")");
+		var next = $("#slideshowContainer  div:eq(" + nextcounter + ")");
+		//console.log("bildwechsel von " + counter + " nach " + nextcounter);
+		current.fadeIn(1000, function() {
+			aktindex--;
+		});
+		next.fadeOut(1000);	
+		
+	}		
+		
+	/////////////////////////////
+	//start auto slideshow
+	//////////////////////////////
+	function play() {
+		//startShow();
+		mytimer = setInterval(bildwechsel, 3000);
+		$("#btnPlay").css("display", "none");
+	}
+		
+	/////////////////////////////
+	//slideshow aufbauen
+	//////////////////////////////	
+	function baueSlideshow() {
+		//alert("baue slideshow");
+		anzahl = bilderArray.length;
+		var htmlstring = "";
+		var iconstring = "";
+		var iconprozent = 100 / anzahl;
+		//knotenpunkte bauen
+		for(var a=0; a<anzahl; a++) {
+			htmlstring += '<div class="bildcontainer"> <img src="bilder/' + bilderArray[a].bildQuelle + '.jpg" > <span  class="inhalt"><h2>' + bilderArray[a].bildUeberschrift + '</h2><p>' + bilderArray[a].bildFliesstext +'</p></span> </div>';
+			
+			iconstring += '<img src="bilder/thumbs/' + bilderArray[a].bildQuelle + '.jpg" style="width:' + iconprozent + '%" onclick="changeIndices(' + a + ')">';
+			
+		}
+		htmlstring += '<button onclick="nextPic()" id="btnNext"> &#10095; </button>  <button onclick="play()" id="btnPlay"> &#9679; </button>  <button onclick="prevPic()" id="btnPrev"> &#10094; </button>';
+		document.getElementById("slideshowContainer").innerHTML = htmlstring;
+		
+		document.getElementById("iconContainer").innerHTML = iconstring;
+		
+		//button positionieren
+		btnPositionieren();
+		//und LOS....		
+		startShow();
+	}	
+	
+	/////////////////////////////////
+	//change indizes
+	/////////////////////////////////
+	function changeIndices(index) {
+			if(mytimer) {
+				clearInterval(mytimer);
+			}
+			$("#btnPlay").css("display", "block");
+			//alle icons transparenz auf 0.5
+			
+			
+			
+			console.log(index);
+			if(index < counter) {
+				//alert("kleiner");
+				
+				counter=index;
+				nextcounter = aktindex;
+				if(counter < 0) counter = anzahl-1;
+				if(nextcounter < 0) nextcounter = anzahl-1;
+				var current = $("#slideshowContainer  div:eq(" + counter + ")");
+				var next = $("#slideshowContainer  div:eq(" + nextcounter + ")");
+				//console.log("bildwechsel von " + counter + " nach " + nextcounter);
+				current.fadeIn(1000, function() {
+					aktindex = index;
+				});
+				next.fadeOut(1000);
+				
+				
+				
+				
+			}
+			else {
+				//alert("groesser");
+				counter = index-1;
+				nextcounter= index;
+				if(counter >= anzahl) counter = 0;
+				if(nextcounter >= anzahl) nextcounter = 0;
+				bildwechsel();				
+			}
+			
+			
+			
+			
+			
+		}
+		
+		
+	//////////////////////
+	//start programm
+	//////////////////////////		
+	window.onload = function() {
+		
+		
+	alleBilderLaden();
+	window.onresize = btnPositionieren;
+		
+	}
+	</script>
+	</head>
+
+	<body>
+<p>
+      <label for="kategorie">Kategorie</label>
+      <select id="kategorie" onchange="alleBilderLaden()">
+    <option value="alle">Alle Kategorien</option>
+    <option value="natur">Natur</option>
+    <option value="studio">Studio</option>
+    <option value="portrait">Portrait</option>
+  </select>
+    </p>
+<div id="slideshow">
+      <div id="slideshowContainer"> </div>
+    </div>
+<!-- Leiste -->
+<div id="iconContainer"></div>
+</body>
+</html>

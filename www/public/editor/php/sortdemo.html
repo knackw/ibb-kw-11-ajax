@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+	
+	<head>
+	<meta charset="utf-8">
+	</head>
+	
+<body>
+<h2>JavaScript Array Sort</h2>
+<p>Click the buttons to sort the array alphabetically or numerically.</p>
+
+	
+
+<button onclick="myFunction()">Sort</button>
+
+	
+<p id="demo"></p>
+<script>
+var bilderarray = new Array();
+bilderarray[0] = new Object();
+bilderarray[0].quelle = "bild1";
+bilderarray[0].kategorie = "Studio";	
+	
+bilderarray[1] = new Object();
+bilderarray[1].quelle = "bild2";
+bilderarray[1].kategorie = "Natur";	
+	
+bilderarray[2] = new Object();
+bilderarray[2].quelle = "fild1";
+bilderarray[2].kategorie = "Studio";	
+	
+bilderarray[3] = new Object();
+bilderarray[3].quelle = "bild123";
+bilderarray[3].kategorie = "Natur";		
+	
+ 
+
+	
+function myFunction() {
+	ausgabe();
+  	bilderarray.sort(compare);
+	console.log("*******************");
+  	ausgabe();
+}
+	
+
+function ausgabe() {
+	for(var c=0; c<bilderarray.length; c++) {
+	  console.log("index: " + c);
+	  for(var d in bilderarray[c]) {
+		  console.log("prop: " + d + " /wert: " + bilderarray[c][d]);
+	  }
+	  console.log("==================");
+  	}
+}	
+	
+	
+function compare(a,b) {
+	console.log("a: " + a);
+	console.log("b: " + b);
+	
+	for(var z in a) {
+		console.log("eigenschaftA: " + z + " /wert: " + a[z]);
+	}
+	for(var y in b) {
+		console.log("eigenschaftB: " + y + " /wert: " + b[y]);
+	}	
+	
+	//return a - b;
+	if(a['kategorie'] > b['kategorie'] ) return 1;
+	if(b['kategorie'] < a['kategorie'] ) return -1;
+	return 0;
+}	
+</script>
+</body>
+</html>

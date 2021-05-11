@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>W3.CSS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/w3schools.css">
+
+<style>
+.mySlides {
+    display: none;
+    position: absolute;
+	width:100%;
+}
+.w3-content {
+   max-width: 1920px; 
+}
+	
+</style>
+<script src="js/jquery-3.6.0.min.js"></script>
+<script>
+	var bilderArray = new Array();
+	var mytimer = undefined;
+	var slideIndex = 1;
+	
+	function alleBilderLaden() {
+		$.ajax({
+			url: "php/alleBilderLaden.php",
+			dataType: "json",
+			type: "post",
+			success: function(data) {
+				//alert(data.message);
+				bilderArray = data.bilderArray;
+				var anzahl = bilderArray.length;
+				var htmlstring = "";
+				var buttonstring = "";
+				var iconstring = "";
+				var iconprozent = 100 / anzahl;
+				
+				for(var a=0; a<anzahl; a++) {
+					htmlstring += '<div class="w3-display-container mySlides"><img src="bilder/' + bilderArray[a].bildQuelle + '.jpg" style="width:100%"><div class="w3-display-bottomleft w3-large w3-container w3-padding-16 w3-black"> ' + bilderArray[a].bildUeberschrift + ' </div><div class="w3-display-bottomright w3-container w3-padding-16 w3-black" style="font-size:12px;width:50%"> ' + bilderArray[a].bildFliesstext + ' </div></div>';
+					
+					iconstring += '<img src="bilder/thumbs/' + bilderArray[a].bildQuelle + '.jpg" style="width:' + iconprozent + '%;cursor:pointer" onclick="gotoSlide(' + a + ')">';
+				}
+				htmlstring += '<div class="w3-display-left"><button class="w3-button w3-black " onclick="plusDivs(-1)">&#10094;</button></div><div class="w3-display-right"><button class="w3-button w3-black w3-display-right" onclick="plusDivs(1)">&#10095;</button></div>';
+				//alert(htmlstring);
+				document.getElementById("iconcontainer").innerHTML = iconstring;
+				document.getElementById("slideshow").innerHTML = htmlstring;
+				//slideshow starten
+				showDivs(slideIndex);
+				//buttons mittig platzieren
+				setTimeout(placeButtons, 300);
+				//start autom. bildwechsel
+				mytimer = setInterval(function() {
+					slideIndex++;
+					showDivs(slideIndex);
+				}, 3000);
+				
+			},
+			error: function() {
+				alert("error alle bilder laden");
+			}
+		});
+	}
+	
+	////////////////////////////
+	//zu einem bild springen
+	////////////////////////////
+	function gotoSlide(indexnr) {
+		//alert("index: " + indexnr);
+		clearInterval(mytimer);
+		slideIndex = indexnr+1;
+		showDivs(slideIndex);
+		mytimer = setInterval(function() {
+			slideIndex++;
+			showDivs(slideIndex);
+		}, 3000);
+	}
+	
+	
+	////////////////////////////
+	//buttons mittig im bild
+	////////////////////////////
+	function placeButtons() {
+		//var hoehe = $("#slideshow").height();
+		var hoehe = $("#slideshow div:eq(" + (slideIndex-1) + ")").height();
+		//var hoehe = $("#slideshow div:eq(0)").height();
+		console.log("hoehe: " + hoehe);
+		$("#slideshow").css("height", hoehe + "px");
+	}	
+	
+	
+	
+
+//showDivs(slideIndex);
+////////////////////////////
+//pfeiltaste
+////////////////////////////
+function plusDivs(n) {
+	clearInterval(mytimer);
+	slideIndex += n;
+	showDivs(slideIndex);
+	mytimer = setInterval(function() {
+			slideIndex++;
+			showDivs(slideIndex);
+		}, 3000);
+}
+
+	
+////////////////////////////
+//ein bild zeigen
+////////////////////////////	
+function showDivs(n) {
+  	var i;
+	var x = $(".mySlides");
+	//console.log("anzahkl bilder: " + x.length);
+	
+  	if (n > x.length) {slideIndex = 1}
+  	if (n < 1) {slideIndex = x.length}
+
+	$(".mySlides").hide(); 
+	if(slideIndex-2 >= 0) {	
+		$(".mySlides:eq(" + (slideIndex-2) + ")").show();
+	}
+	else if(slideIndex -1 < 0){
+		$(".mySlides:eq(" + (x.length-2) + ")").show();
+	}
+	
+	$(".mySlides:eq(" + (slideIndex-1) + ")").fadeIn(1000);
+
+}
+	
+	window.onload = alleBilderLaden;
+	window.onresize = placeButtons;
+</script>
+</head>
+
+<body>
+<h2 class="w3-center">Manual Slideshow</h2>
+<div id="iconcontainer"></div>
+<div class="w3-content w3-display-container" id="slideshow"></div>
+</body>
+</html>

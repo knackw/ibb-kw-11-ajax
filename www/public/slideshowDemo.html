@@ -1,0 +1,158 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Unbenanntes Dokument</title>
+<script src="js/jquery-3.6.0.min.js"></script>
+<script>
+	
+var counter = 0;
+var nextcounter = 1;
+var anzahl;
+var mytimer;
+
+	
+var bilderArray = new Array();
+	var mytimer = undefined;
+	
+	function alleBilderLaden() {
+		$.ajax({
+			url: "php/alleBilderLaden.php",
+			dataType: "json",
+			type: "post",
+			success: function(data) {
+				alert(data.message);
+				bilderArray = data.bilderArray;
+				var anzahl = bilderArray.length;
+				var htmlstring = "";
+				
+				for(var a=0; a<anzahl; a++) {
+					htmlstring += '<div class="bildcontainer"> <img src="bilder/' + bilderArray[a].bildQuelle + '.jpg" > <span  class="inhalt"><h2>' + bilderArray[a].bildUeberschrift + '</h2><p>' + bilderArray[a].bildFliesstext +'</p></span> </div>';
+					
+				}
+				htmlstring += '<button onclick="nextPic()" id="btnNext"> &#10095; </button>    <button onclick="prevPic()" id="btnPrev"> &#10094; </button>';
+				
+				
+				document.getElementById("slideshowContainer").innerHTML = htmlstring;
+		  
+		  		setTimeout(btnPositionieren, 500);
+				
+		  		startShow();
+		  
+
+			},
+			error: function() {
+				alert("error alle bilder laden");
+			}
+		});
+	}
+				
+				
+	
+	
+	
+function startShow() {
+	//alert("reaDY");
+	anzahl = $("#slideshowContainer img").length;
+	console.log("anzahl: " + anzahl);
+	//alle bis 1. aus
+	for(var a=1; a<anzahl; a++) {
+		$("#slideshowContainer  div:eq(" + a + ")").hide();
+	}
+	//inerval definition
+	mytimer = setInterval(bildwechsel, 3000);
+}
+
+
+function nextPic() {
+	//alert("nextpic");
+	bildwechsel();
+}
+	
+function prevPic() {
+	//alert("prevpic");
+	/*
+	clearInterval(mytimer);
+	counter-=2;
+	nextcounter-=2;
+	if(counter < 0) counter = anzahl - 1;
+	if(nextcounter<0) nextcounter = anzahl - 1;
+	bildwechsel();
+	*/
+}
+	
+	
+	function bildwechsel() {
+		var current = $("#slideshowContainer  div:eq(" + counter + ")");
+		var next = $("#slideshowContainer  div:eq(" + nextcounter + ")");
+		console.log("bildwechsel von " + counter + " nach " + nextcounter);
+		current.fadeOut(1000);
+		next.fadeIn(1000);
+		counter++;
+		nextcounter++;
+		if(counter >= anzahl) counter = 0;
+		if(nextcounter >= anzahl) nextcounter = 0;
+	}
+	
+</script>
+<style>
+img {
+    width: 100%;
+}
+.bildcontainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+#slideshow {
+    position: relative;
+    width: 100%;
+    left: 0;
+    top: 0;
+}
+.inhalt {
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 50%;
+}
+button {
+    width: 30px;
+    height: 30px;
+    position: absolute;
+}
+#btnNext {
+    right: 0;
+}
+#btnPrev {
+    left: 0;
+}
+</style>
+</head>
+
+<body>
+<div id="slideshow">
+  <div id="slideshowContainer"> </div>
+</div>
+<script>
+
+//setTimeout(btnPositionieren, 200);	
+
+window.onresize = btnPositionieren;
+
+function btnPositionieren() {
+	var hoehe = $(".bildcontainer").height();
+	console.log("hoehe: " + hoehe);
+	$("#slideshowContainer").css("height", hoehe + "px");
+	$("#btnNext").css("top", "50%");
+	$("#btnPrev").css("top", "50%");
+}
+	
+	//var hoehe = $("#slideshow div:eq(" + (slideIndex-1) + ")").height();
+	
+	
+//startShow();
+	alleBilderLaden();
+</script>
+</body>
+</html>

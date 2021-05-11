@@ -1,0 +1,771 @@
+<!doctype html>
+<html>
+			<head>
+			<meta charset="utf-8">
+			<meta http-equiv="cache-control" content="no-cache">
+			<meta http-equiv="expires" content="0">
+			<meta http-equiv="pragma" content="no-cache">
+			<title>EDITOR</title>
+			<script src="../js/jquery-3.6.0.min.js"></script>
+			<script src="../jquery-ui/jquery-ui.js"></script>
+			<style>
+* {
+    font-family: verdana;
+    font-size: 0.95em;
+}
+* {
+    box-sizing: border-box;
+}
+body {
+    margin: 0
+}
+h1 {
+    font-size: 1.2em;
+}
+/* Create two equal columns that floats next to each other */
+.column {
+    float: left;
+    min-width: 250px;
+}
+/* Clear floats after the columns */
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+#neuesBild, #editBild {
+    background-color: lightgreen;
+    padding: 30px;
+    display: none;
+    position: absolute;
+    top: 70px;
+    left: 20px;
+    cursor: move;
+    box-shadow: -10px -10px 10px rgba(0,0,0,.3);
+}
+#editBild {
+    background-color: lightblue;
+}
+label {
+    display: inline-block;
+    width: 150px;
+}
+input, textarea {
+    width: 250px;
+}
+select, input[type='button'] {
+    width: 256px;
+}
+textarea {
+    resize: none;
+    height: 200px;
+}
+#btnSchliessenNeuesBild, #e_btnSchliessenNeuesBild {
+    width: 50px;
+    right: 30px;
+    position: absolute;
+}
+table {
+    width: 100%;
+}
+table, td, th {
+    border: 1px solid black;
+}
+td, th {
+    padding: 10px;
+    vertical-align: top;/* width:20%; */
+}
+tr:nth-child(even) {
+    background: #CCC;
+}
+tr:nth-child(odd) {
+    background: #FFF;
+}
+tr {
+    display: table-row;
+}
+img {
+    cursor: pointer;
+}
+#e_ID, #e_quelle {
+    opacity: 0.5;
+}
+#headContainer {
+    position: fixed;
+    z-index: 999;
+    background-color: #eeeeee;
+    width: 100%;
+    height: 80px;
+    box-shadow: 0 10px 10px rgba(0,0,0,0.5);
+}
+</style>
+			<script>
+	/////////////////////////////
+	//php ini variablen auslesen
+	////////////////////////////
+	var inivars = new Object();	
+	$.ajax({
+		url: "php/inivars.php",
+		dataType:"json",
+		type:"post",
+		success: function(data) {
+			inivars.maxfiles = parseInt(data.maxanzahl);
+			//alert("maxfiles: " + inivars.maxfiles);
+		},
+		error: function() {
+			alert("inivars einlesen error");
+		}
+	});
+
+	var aktindex;//index bilderarray aktuelles bild
+	var startindex = 1;//startwert anzeige bilder zum blättern
+	var anzeigen = 5;//anzahl zeilen bilder
+	var aktsortierkriterium = undefined;
+	var listallflag = false;	
+	var bilderArray = new Array();	
+	////////////////////////////////
+	//alle bilder laden
+	///////////////////////////////			
+	function alleBilderLaden() {
+		$.ajax({
+			url: "php/alleBilderLaden.php",
+			type: "post",
+			dataType : "json",
+			success: function(data) {
+				//alert(data.message);
+				//alert(data.bilderArray);
+				bilderArray = data.bilderArray;
+				document.getElementById("status").innerHTML = "1-5/" + bilderArray.length;
+			
+				buildTable();
+				if(listallflag == false) {
+					jumpToIndex();
+				}
+			},
+			error: function() {
+				alert("error alle bilder laden");
+			}
+		});
+	}	
+	
+	////////////////////////////////////////
+	//tabelle bauen
+	/////////////////////////////////////
+	function buildTable() {
+		var htmlstring = "";
+		htmlstring += "<thead>";
+		htmlstring += "<tr>";
+		htmlstring += "<th>NR</th>";
+		htmlstring += "<th>bild</th>";
+				
+		htmlstring += "<th><a href='#' onclick='sortieren(\"bildID\")'>bildID</a></th>";
+		htmlstring += "<th><a href='#' onclick='sortieren(\"bildQuelle\")'>bildQuelle</a></th>";
+		htmlstring += "<th><a href='#' onclick='sortieren(\"bildUeberschrift\")'>bildUeberschrift</a></th>";
+		htmlstring += "<th><a href='#' onclick='sortieren(\"bildFliesstext\")'>bildFliesstext</a></th>";
+		htmlstring += "<th><a href='#' onclick='sortieren(\"bildKategorie\")'>bildKategorie</a></th>";
+		htmlstring += "<th><a href='#' onclick='sortieren(\"bildAutor\")'>bildAutor</a></th>";
+		htmlstring += "<th><a href='#' onclick='sortieren(\"bildDatum\")'>bildDatum</a></th>";
+		htmlstring += "<th><a href='#' onclick='sortieren(\"bildStamp\")'>bildStamp</a></th>";
+		htmlstring += "<th><a href='#' onclick='sortieren(\"bildNummer\")'>bildNummer</a></th>";
+		
+		htmlstring += "</tr>";
+		htmlstring += "</thead>";
+		htmlstring += "<tbody>";
+		var anzahl = bilderArray.length;
+		for(var a=0; a<anzahl; a++) {
+			//die ersten anzeigen datensaetze zeigen
+			if(a < anzeigen || listallflag == true) {
+				htmlstring += "<tr>";
+			}
+			else {
+				htmlstring += "<tr style='display:none'>";
+			}
+			
+			htmlstring += "<td>" + (a+1) + "</td>";
+			
+			//aktives bild mit rahmen versehen
+			if(aktindex == a) {
+				//getvar für cache umgehen erzeugen -> cache wächst
+				var zuf = Math.random();
+				htmlstring += "<td><img src='../bilder/thumbs/" + bilderArray[a].bildQuelle + ".jpg?zuf=" + zuf + "' style='height:100px; width:100%;border:2px solid red' onclick='editBild(" + a + ")' id='bild" + a + "'></td>";
+			}
+			else {
+				htmlstring += "<td><img src='../bilder/thumbs/" + bilderArray[a].bildQuelle + ".jpg?zuf=" + zuf + "' style='height:100px; width:200px;' onclick='editBild(" + a + ")' id='bild" + a + "'></td>";
+			}
+			htmlstring += "<td>" + bilderArray[a].bildID + "</td>";
+			htmlstring += "<td>" + bilderArray[a].bildQuelle + "</td>";
+			htmlstring += "<td>" + bilderArray[a].bildUeberschrift + "</td>";
+			htmlstring += "<td>" + bilderArray[a].bildFliesstext + "</td>";
+			htmlstring += "<td>" + bilderArray[a].bildKategorie + "</td>";
+			htmlstring += "<td>" + bilderArray[a].bildAutor + "</td>";				
+			htmlstring += "<td>" + bilderArray[a].bildDatum + "</td>";
+			htmlstring += "<td>" + bilderArray[a].bildStamp + "</td>";
+			htmlstring += "<td>" + bilderArray[a].bildNummer + "</td>";
+			htmlstring += "</tr>";
+		}
+		htmlstring += "</tbody>";
+		//alert(htmlstring);
+		document.getElementById("alleBilder").innerHTML = htmlstring;
+		//zurueck erstmal aus...
+		document.getElementById("btnPrev").style.display = "none";
+	}		
+			
+	////////////////////////////////
+	//alle aktivrahmen löschen
+	/////////////////////////////////		
+	function deleteBorders() {
+		aktindex = undefined;
+		for(var a=0; a<bilderArray.length; a++) {
+			document.getElementById("bild" + a).style.border = "0";
+		}
+	}		
+	
+	///////////////////////////////
+	//bilder sortieren
+	//////////////////////////////
+	function sortieren(sortkriterium) {
+		//alert(sortkriterium);
+		deleteBorders();
+		aktsortierkriterium = sortkriterium;
+		bilderArray.sort(compare);
+		buildTable();
+	}		
+	function compare(a, b) {
+		if(aktsortierkriterium == "bildID" || aktsortierkriterium == "bildNummer") {
+			if(parseInt(a[aktsortierkriterium]) > parseInt(b[aktsortierkriterium])) return 1;
+			if(parseInt(a[aktsortierkriterium]) < parseInt(b[aktsortierkriterium])) return -1;
+		}
+		else {
+			if(a[aktsortierkriterium] > b[aktsortierkriterium]) return 1;
+			if(a[aktsortierkriterium] < b[aktsortierkriterium]) return -1;
+		}
+		
+		return 0;
+	}
+			
+	////////////////////////////////
+	//neues Bild sichern
+	///////////////////////////////	
+	function neuesBildSichern() {
+		//alert("neuesBildSichern");
+		var myueberschrift = document.getElementById("ueberschrift").value;
+		var myfliesstext = document.getElementById("fliesstext").value;
+		var mykategorie = document.getElementById("kategorie").value;
+		var myautor = document.getElementById("autor").value;
+		var mydatum = document.getElementById("datum").value;
+		var mynummer = document.getElementById("nummer").value;
+		
+		//alert("myueberschrift: "+ myueberschrift + " /myfliesstext: " + myfliesstext + " /mykategorie: " + mykategorie + " /autor: " + myautor);
+		
+		//datei für upload vorbereiten
+		var datei = document.getElementById("bild");
+		var bildanzahl = datei.files.length;
+		
+		var fehlerstatus = false;
+	
+		if(bildanzahl > inivars.maxfiles) {
+			alert("max. Bilder erreicht!");
+			fehlerstatus = true;
+		}
+	
+		
+		if(myueberschrift == "") {
+			alert("Überschrift eintragen!");
+			fehlerstatus = true;
+		}
+		if(myfliesstext == "") {
+			alert("Fliesstext eintragen!");
+			fehlerstatus = true;
+		}
+		if(mykategorie == "") {
+			alert("Kategorie eintragen!");
+			fehlerstatus = true;
+		}		
+		if(myautor == "") {
+			alert("Autor eintragen!");
+			fehlerstatus = true;
+		}		
+		//daten nach php
+		if(fehlerstatus == false) {
+			//übergabe form bauen
+			var myform = new FormData();
+			myform.append("ueberschrift", myueberschrift);
+			myform.append("autor", myautor);
+			myform.append("kategorie", mykategorie);
+			myform.append("fliesstext", myfliesstext);
+			myform.append("datum", mydatum);
+			myform.append("nummer", mynummer);
+			for(var a=0; a<bildanzahl; a++) {
+				//alert("a: " + a);
+				myform.append("bild[]", datei.files[a]);
+			}
+		
+			formSchliessen("neuesBild");
+			$.ajax({
+				url: "php/neuesBildSichern.php",
+				data: myform,
+				type: "post",
+				dataType: "json",
+				contentType: false,
+				processData: false,
+				success: function(data) {
+					alert(data);
+					alleBilderLaden();
+				},
+				error: function() {
+					alert("error neues bild hinzufügen");
+				}
+			});
+		}
+	}
+		
+	///////////////////////////////
+	//eine form schliessen
+	///////////////////////////////
+	function formSchliessen(meineForm) {
+		//alert("formSchliessen " + meineForm);
+		//$("#" + meineForm).css("display", "none");
+		document.getElementById(meineForm).style.display = "none";
+		//alle vorhandenen einträge löschen
+		if(meineForm == "neuesBild") {
+			document.getElementById("ueberschrift").value = "";
+			document.getElementById("fliesstext").value = "";
+			document.getElementById("autor").value = "";
+			document.getElementById("kategorie").selectedIndex = 0;
+			document.getElementById("bild").value = "";
+			document.getElementById("datum").value = "";
+			$("#bildBox").css("display", "none");
+		}
+		deleteBorders();
+	}
+	///////////////////////////////
+	//eine form öffnen
+	///////////////////////////////
+	function formOeffnen(meineForm) {
+		//ev. border aus edit aus...
+		if(meineForm == "neuesBild") deleteBorders();
+		//alle formen zu
+		document.getElementById("neuesBild").style.display = "none";
+		document.getElementById("editBild").style.display = "none";
+		document.getElementById(meineForm).style.display = "block";
+	}		
+	
+	///////////////////////////////
+	//ein bild editieren
+	///////////////////////////////
+	function editBild(indexnr) {
+		//kontur um aktuelles bild
+		deleteBorders();
+		aktindex = indexnr;
+		document.getElementById("bild" + indexnr).style.border = "2px solid red";
+		
+		//document.getElementById("editBild").style.display = "block";
+		formOeffnen("editBild");
+		
+		var zuf = Math.random();
+		document.getElementById("e_bildBox").src = "../bilder/thumbs/" + bilderArray[indexnr].bildQuelle + ".jpg?zuf=" + zuf;
+		document.getElementById("e_bildBox").style.display = "block";
+		
+		document.getElementById("e_ID").value = bilderArray[indexnr].bildID;
+		document.getElementById("e_ueberschrift").value = bilderArray[indexnr].bildUeberschrift;
+		document.getElementById("e_fliesstext").value = bilderArray[indexnr].bildFliesstext;
+		document.getElementById("e_autor").value = bilderArray[indexnr].bildAutor;
+		document.getElementById("e_datum").value = bilderArray[indexnr].bildDatum;
+		document.getElementById("e_quelle").value = bilderArray[indexnr].bildQuelle;
+		document.getElementById("e_kategorie").value = bilderArray[indexnr].bildKategorie;
+		document.getElementById("e_nummer").value = bilderArray[indexnr].bildNummer;
+		
+		//position geklicktes bild auslesen
+		var el = document.getElementById('bild' + indexnr);
+		var rect = el.getBoundingClientRect();
+		//alert("x: " + rect.left + " y: " + rect.top + " breite: " + rect.width + " hoehe: " + rect.height);
+		var mytop = Math.round(rect.top) + 75 + window.pageYOffset;
+		var myleft = Math.round(rect.left) + 75;
+		document.getElementById("editBild").style.top = mytop + "px";
+		document.getElementById("editBild").style.left = myleft + "px";
+	}
+	
+	//////////////////////////
+	//zu einem startindex springen
+	/////////////////////////	
+	function jumpToIndex() {
+		//alert("jump: " + startindex);
+		//alle zeilen aus
+			$("#alleBilder tr").css("display", "none");
+			$("#alleBilder tr:eq(0)").css('display', 'table-row');
+			//anzahl bilder ab startindex einblenden
+			for(var a=startindex; a<startindex+anzeigen; a++) {
+				$("#alleBilder tr:eq(" + a + ")").css('display', 'table-row');
+			}
+	}
+			
+	///////////////////////////////
+	//edit sichern
+	///////////////////////////////	
+	function editBildSichern()	{
+		var myueberschrift = document.getElementById("e_ueberschrift").value;
+		var myfliesstext = document.getElementById("e_fliesstext").value;
+		var mykategorie = document.getElementById("e_kategorie").value;
+		var myautor = document.getElementById("e_autor").value;
+		var mydatum = document.getElementById("e_datum").value;
+		var myID = document.getElementById("e_ID").value;
+		var mynummer = document.getElementById("e_nummer").value;
+		var myquelle = document.getElementById("e_quelle").value;
+		
+		var myform = new FormData();
+		myform.append("ueberschrift", myueberschrift);
+		myform.append("quelle", myquelle);
+		myform.append("autor", myautor);
+		myform.append("kategorie", mykategorie);
+		myform.append("fliesstext", myfliesstext);
+		myform.append("datum", mydatum);
+		myform.append("ID", myID);
+		myform.append("nummer", mynummer);
+		//wenn bild da anhängen
+		if(document.getElementById("e_bild").value != "") {
+			var datei = document.getElementById("e_bild");
+			myform.append("bild", datei.files[0]);
+		}
+		
+		$.ajax({
+			url: "php/editBildSichern.php",
+			type: "post",
+			data: myform,
+			dataType: "json",
+			contentType: false,
+			processData: false,
+			success: function(data) {
+				//alert(data);
+				document.getElementById("editBild").style.display = "none";
+				alleBilderLaden();
+				//alert("laden fertgi");
+				jumpToIndex();
+			},
+			error: function() {
+				alert("error edit sichern");
+			}
+		});
+		
+	}
+		
+	///////////////////////////////
+	//edit bild loeschen
+	///////////////////////////////		
+	function editBildDelete() {
+		var myID = document.getElementById("e_ID").value;
+		var myQuelle = document.getElementById("e_quelle").value;
+		//alert("id: " + myID + " /quelle: " + myQuelle);
+		if(confirm("willst du das wirklich tun?") == true) {
+			$.ajax({
+				url: "php/editBildDelete.php",
+				data: {ID:myID, quelle:myQuelle},
+				type: "post",
+				dataType : "json",
+				success: function(data) {
+					//alert(data);
+					document.getElementById("editBild").style.display = "none";
+					deleteBorders();
+					alleBilderLaden();
+				},
+				error: function() {
+					alert("bild löschen error");
+				}
+			});
+		}
+	}	
+	////////////////////////////
+	//alles löschen
+	/////////////////////////////	
+	function killAll() {
+		if(confirm("Willst du das wirklich?") == true) {
+			
+			$.ajax({
+				url: "php/killAll.php",
+				type: "post",
+				dataType: "json",
+				success: function(data) {
+					//alert(data);
+					document.getElementById("editBild").style.display = "none";
+					document.getElementById("neuesBild").style.display = "none";
+					alleBilderLaden();
+				},
+				error: function () {
+					alert("Error alles löschen!");
+				}
+				
+			});
+			
+		}
+	}	
+	
+	/////////////////////////
+	//vorschaubild neues bild
+	//////////////////////////////
+	function readURL(input) {
+		//alert(input.id);
+		var ele;
+		if(input.id == "e_bild") {
+			ele = "#e_bildBox";
+		}
+		else {
+			ele = "#bildBox";
+		}
+		if(input.files && input.files[0]) {
+			var reader = new FileReader();
+			reader.onload = function(evt) {
+				$(ele).attr('src', evt.target.result);
+				$(ele).css("display", "block");
+			}
+			reader.readAsDataURL(input.files[0]);
+		}
+	}	
+	
+	//////////////////////////
+	//bild gross zeigen
+	////////////////////////
+	function showBig(bildquelle) {
+		//alert(bildquelle);
+		bildquelle = bildquelle.replace("thumbs/", "");
+		window.open(bildquelle, "_blank", "resizable,scrollbars,status");
+	}		
+			
+	//////////////////////////
+	//datensaetze blättern
+	/////////////////////////
+	function blaettern(evt) {
+		//welche button geklickt?
+		richtung = evt.currentTarget.id;
+		oldstartindex = startindex;
+		
+		//alle zeilen aus
+		$("#alleBilder tr").css("display", "none");
+		$("#alleBilder tr:eq(0)").css('display', 'table-row');
+		
+		//buttonauswerten
+		if(richtung == "btnNext") {
+			startindex += anzeigen;
+			for(var a=startindex; a<startindex+anzeigen; a++) {
+				$("#alleBilder tr:eq(" + a + ")").css('display', 'table-row');
+		 	}
+		}
+		else {
+			startindex -= anzeigen;
+			for(var a=startindex; a<startindex+anzeigen; a++) {
+				$("#alleBilder tr:eq(" + a + ")").css('display', 'table-row');
+			}
+		}
+		
+		
+		//status anzeige einstellen
+		document.getElementById("status").innerHTML = (startindex) +  "-" + (startindex+anzeigen-1) + "/" + bilderArray.length;
+		
+		
+		
+		//buttons zum blättern an und aus
+		if(startindex+anzeigen > bilderArray.length) {
+				document.getElementById("btnNext").style.display = "none";
+		}
+		else {
+			document.getElementById("btnNext").style.display = "table-row";
+		}
+		if(startindex-anzeigen < 1) {
+				document.getElementById("btnPrev").style.display = "none";
+		}
+		else {
+			document.getElementById("btnPrev").style.display = "table-row";
+		}
+	}
+		
+	//////////////////////////
+	//blättern ein aus
+	/////////////////////////	
+	function listAll() {
+		//alert("jump: " + startindex);
+		if(listallflag == false) {
+			//alle zeilen aus
+			$("#alleBilder tr").css("display", "table-row");
+			listallflag = true;
+			$("#btnNext").css("display", "none");
+			$("#btnPrev").css("display", "none");
+			$("#status").css("display", "none");
+			$("#btnListAll").val("List all OFF");
+		}
+		else {
+			$("#alleBilder tr").css("display", "none");
+			$("#alleBilder tr:eq(0)").css('display', 'table-row');
+			//anzahl bilder ab startindex einblenden
+			for(var a=startindex; a<startindex+anzeigen; a++) {
+				$("#alleBilder tr:eq(" + a + ")").css('display', 'table-row');
+			}
+			listallflag = false;
+			$("#btnNext").css("display", "block");
+			$("#btnPrev").css("display", "block");
+			$("#status").css("display", "block");
+			$("#btnListAll").val("List all ON");
+		}
+		
+	}
+			
+			</script>
+			</head>
+
+			<body>
+<div id="headContainer">
+              <h1 style="padding-left:20px;">EDITOR</h1>
+              <div class="row" >
+    <div class="column">
+                  <input type="button" value="neues Bild" id="btnOeffnenNeuesBild" onclick="formOeffnen('neuesBild')">
+                </div>
+    <div class="column">
+                  <input type="button" value="KILL ALL" id="btnKillAll" onclick="killAll()">
+                </div>
+    <div class="column">
+                  <input type="button" value="List all ON" id="btnListAll" onclick="listAll()">
+                </div>
+    <div class="column">
+                      <input type="button"  value="<" id="btnPrev" style="opacity:1">
+                  </div>
+    <div class="column">
+                      <input type="button"  value=">" id="btnNext" style="opacity:1">
+                  </div>
+  </div>
+            </div>
+<!-- ========================= --> 
+<!-- BILDER --> 
+<!-- ========================= -->
+
+<table id="alleBilder" style="position:relative;top:80px">
+            </table>
+<div class="row">
+
+            </div>
+<p id="status" style="position:absolute;bottom:0px;right:10px;margin:0"></p>
+
+<!-- =============================== --> 
+<!-- ===neues bild --> 
+<!-- =============================== -->
+<div id="neuesBild">
+              <input type="button" value="X" id="btnSchliessenNeuesBild" onclick="formSchliessen('neuesBild')">
+              <h3>Neues Bild</h3>
+              <p> <img src="../images/trans.gif" id="bildBox" style="width:300px;height:200px;display:none" alt=""> </p>
+              <p>
+    <label for="ueberschrift">&Uuml;berschrift</label>
+    <input type="text" id="ueberschrift">
+  </p>
+              <p>
+    <label for="fliesstext">Beschreibung</label>
+    <textarea id="fliesstext"></textarea>
+  </p>
+              <p>
+    <label for="kategorie">Kategorie</label>
+    <select id="kategorie">
+                  <option value="">Bitte wählen...</option>
+                  <option value="natur">Natur</option>
+                  <option value="studio">Studio</option>
+                  <option value="portrait">Portrait</option>
+                </select>
+  </p>
+              <p>
+    <label for="autor">Autor</label>
+    <input type="text" id="autor" >
+  </p>
+              <p>
+    <label for="datum">Datum</label>
+    <input type="date" id="datum" >
+  </p>
+              <p>
+    <label for="nummer">Nummer</label>
+    <input type="input" id="nummer" >
+  </p>
+              <p>
+    <label for="bild">Bilddatei</label>
+    <input type="file" id="bild" multiple>
+  </p>
+              <p>
+    <label for="btnNeuesBild">sichern</label>
+    <input type="button" id="btnNeuesBild" value="sichern" onClick="neuesBildSichern()" >
+  </p>
+            </div>
+
+<!-- =============================== --> 
+<!-- ===edit bild --> 
+<!-- =============================== -->
+<div id="editBild">
+              <input type="button" value="X" id="e_btnSchliessenNeuesBild" onclick="formSchliessen('editBild')">
+              <h3>Edit Bild</h3>
+              <p> <img src="#" id="e_bildBox" alt="" style="width:300px;height:200px;display:none" onclick="showBig(this.src)"> </p>
+              <p>
+    <label for="e_quelle">Bildquelle</label>
+    <input type="text" id="e_quelle" readonly>
+  </p>
+              <p>
+    <label for="e_ID">ID</label>
+    <input type="text" id="e_ID" readonly>
+  </p>
+              <p>
+    <label for="e_ueberschrift">&Uuml;berschrift</label>
+    <input type="text" id="e_ueberschrift">
+  </p>
+              <p>
+    <label for="e_fliesstext">Beschreibung</label>
+    <textarea id="e_fliesstext"></textarea>
+  </p>
+              <p>
+    <label for="e_kategorie">Kategorie</label>
+    <select id="e_kategorie">
+                  <option value="">Bitte wählen...</option>
+                  <option value="natur">Natur</option>
+                  <option value="studio">Studio</option>
+                  <option value="portrait">Portrait</option>
+                </select>
+  </p>
+              <p>
+    <label for="e_autor">Autor</label>
+    <input type="text" id="e_autor" >
+  </p>
+              <p>
+    <label for="e_datum">Datum</label>
+    <input type="date" id="e_datum" >
+  </p>
+              <p>
+    <label for="e_nummer">Nummer</label>
+    <input type="input" id="e_nummer" >
+  </p>
+              <p>
+    <label for="e_bild">Bilddatei</label>
+    <input type="file" id="e_bild" value="">
+  </p>
+              <p>
+    <label for="btnEditBild">sichern</label>
+    <input type="button" id="btnEditBild" value="sichern" onClick="editBildSichern()" >
+  </p>
+              <p>
+    <label for="btnDeleteBild">löschen</label>
+    <input type="button" id="btnDeleteBild" value="löschen" onClick="editBildDelete()" >
+  </p>
+            </div>
+<script>
+	////////////////////////////////
+		//programmstart	
+	////////////////////////////////
+		alleBilderLaden();
+	
+		//vorschaubild neues bild
+		$("#bild").change(function() {
+			readURL(this);
+		});
+		$("#e_bild").change(function() {
+			readURL(this);
+		});	
+	
+		//elemente ziehbar machen
+    	$( "#neuesBild" ).draggable();
+		$( "#editBild" ).draggable();
+	
+		$("#btnNext").on("click", blaettern);
+		$("#btnPrev").on("click", blaettern);
+	
+
+	</script>
+</body>
+</html>

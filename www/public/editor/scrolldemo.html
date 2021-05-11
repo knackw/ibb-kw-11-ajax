@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Unbenanntes Dokument</title>
+	
+	<style>
+		body {
+			margin:0;
+		}
+		#mydiv {
+			width:200px;
+			height:200px;
+			background-color: red;
+		}
+		#mydiv1 {
+			 width:50px;
+			height:2000px;
+			background-color: green;
+		}
+		#divabs {
+			position:absolute;
+			top:800px;
+			width:200px;
+			height:100px;
+			background-color:blue;
+			left:100px;
+			display:none;
+		}
+		
+	</style>
+	
+	<script src="../js/jquery-3.6.0.min.js"></script>
+	
+	<script>
+		/////////////////////////////////////////////////
+		//position absolute auf browserfenster auslesen
+		/////////////////////////////////////////////////
+	function getCoords(ele) {
+		var mybox = ele.getBoundingClientRect();
+		return {top:mybox.top+window.pageYOffset, left:mybox.left+window.pageXOffset};
+	}
+	
+	
+		/////////////////////////////////////////////////
+		//position scrollbalken
+		/////////////////////////////////////////////////
+
+		function myFunction() {
+  			console.log(window.scrollY);
+			if(window.scrollY > 600) {
+				//document.getElementById("divabs").style.display = "block";
+				$("#divabs").fadeIn(1000);
+			}
+			else {
+				//document.getElementById("divabs").style.display = "none";
+				$("#divabs").fadeOut(1000);
+			}
+		}
+	
+	</script>
+</head>
+
+<body onscroll="myFunction()">
+	
+	<div id="mydiv" ></div>
+	
+	<div id="mydiv1"></div>
+	
+	<div id="divabs"></div>
+	
+	<script>
+		var myele = document.getElementById("divabs");
+		var mypos = getCoords(myele);
+		//alert("xwert: " + mypos.left + " /ywert: " + mypos.top);
+		
+		
+		//window.scrollBy(200,0);
+		//alert(window.pageXOffset + window.pageYOffset);
+		
+		
+
+	</script>
+</body>
+</html>

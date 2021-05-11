@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Unbenanntes Dokument</title>
+
+<script src="js/jquery-3.6.0.min.js"></script>
+
+
+<script>
+
+function startShow() {
+	//alert("reaDY");
+	var anzahl = $("#slideshowContainer img").length;
+	console.log("anzahl: " + anzahl);
+	var counter = 0;
+	var nextcounter = 1;
+	
+	//alle bis 1. aus
+	for(var a=1; a<anzahl; a++) {
+		$("#slideshowContainer  img:eq(" + a + ")").hide();
+	}
+	//inerval definition
+	setInterval(function() {
+		var current = $("#slideshowContainer  img:eq(" + counter + ")");
+		var next = $("#slideshowContainer  img:eq(" + nextcounter + ")");
+		console.log("bildwechsel von " + counter + " nach " + nextcounter);
+		current.fadeOut(1000);
+		next.fadeIn(1000);
+		counter++;
+		nextcounter++;
+		if(counter >= anzahl) counter = 0;
+		if(nextcounter >= anzahl) nextcounter = 0;
+	}, 3000);
+}
+</script>
+
+<style>
+img {
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;	
+}
+</style>
+
+</head>
+
+<body>
+<div id="slideshowContainer">
+<img src="bilder/f3b6e62895.jpg" >
+<img src="bilder/f287ccfcae.jpg" >
+<img src="bilder/efa1f27fc1.jpg" >
+</div>
+<script>
+startShow();
+</script>
+</body>
+</html>
