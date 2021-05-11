@@ -55,6 +55,10 @@ Siehe hierzu: https://github.com/knackw/docker_nginx_php8_mariadb10_phpmyadmin41
 
 **1) Webserver erzeugen**
 
+Quellangaben:
+
+PHP's development with Docker the easy way: https://stefan-poeltl.medium.com/php-development-with-docker-the-easy-way-13621ec5d39b
+
 Mit dem unten angegeben Terminal Kommando wird Entwicklungsumgebung generiert 
 und anschließen der Service (Server) gestartet. Du musst Dich im Verzeichnis des Projektes befinden, 
 indem sich die Datei docker-compose.yml befindet.
