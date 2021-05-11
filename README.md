@@ -53,11 +53,9 @@ Siehe hierzu: https://github.com/knackw/docker_nginx_php8_mariadb10_phpmyadmin41
 
 ## 2. Installation der HTML Entwicklungsumgebung
 
-Quellangaben:
+**1) Webserver erzeugen**
 
-PHP's development with Docker the easy way: https://stefan-poeltl.medium.com/php-development-with-docker-the-easy-way-13621ec5d39b
-
-Mit dem unten angegeben Terminal Kommando werden die Anwendungen generiert 
+Mit dem unten angegeben Terminal Kommando wird Entwicklungsumgebung generiert 
 und anschließen der Service (Server) gestartet. Du musst Dich im Verzeichnis des Projektes befinden, 
 indem sich die Datei docker-compose.yml befindet.
 
@@ -72,6 +70,10 @@ Zum Beenden des Services gibst du
 `docker-compose down`
 
 ein.
+
+**2) Tabelle anlegen**
+
+Um die Tabelle zu erzeugen muss das Script `tables_creator.php` im Verzeichnis `./www/public/connection/` ausgeführt werden.
 
 ## 5. Schlussbemerkung
 
